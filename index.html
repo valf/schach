@@ -13,6 +13,8 @@
             optimalImageDiffThreshold: 0.4,
             boardSize: 200,
             squareSize: 200 / 8,
+            prevImage: undefined,
+            currImage: undefined,
         };
 
         var prevCanvas = document.querySelector("#prev");
@@ -30,8 +32,8 @@
             image.src = src;
         }
 
-        loadImage("./f3o.jpg", function (prevImage) {
-            loadImage("./f4o.jpg", function(currImage) {
+        loadImage("./src/f3o.jpg", function (prevImage) {
+            loadImage("./src/f4o.jpg", function(currImage) {
                 onImagesLoaded(prevImage, currImage);
             });
         });
@@ -93,7 +95,11 @@
             console.log("diffPerSquareSorted", diffPerSquareSorted);
 
             function onImageReceived(event) {
-                alert("event", event);
+                var xhr = new XMLHttpRequest();
+                xhr.addEventListener("load", function() { console.log( this.response ); });
+                xhr.open("POST", "/image" );
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.send("data=" + encodeURIComponent(event.data));
             }
 
             window.addEventListener("message", onImageReceived);
