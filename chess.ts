@@ -39,7 +39,6 @@ function getMoveSquares(move: string): Square[] {
 
 function getMovesTouchingSquares(squares: Square[]) {
     const possibleMoves = game.moves().filter(move => squares.some(s => getMoveSquares(move).includes(s)));
-    console.log({ possibleMoves });
     if (possibleMoves.length === 1) {
         return possibleMoves;
     }
@@ -82,7 +81,7 @@ function turn(...squares: Square[]) {
         } else if (squares.length === 4 && possibleMoves.includes("O-O")) {
             possibleMoves = ["O-O-O"];
         } else {
-            throw new Error(`Found ${possibleMoves.length} possible moves, ${possibleMoves.join(" , ")}`);
+            throw new Error(`Found ${possibleMoves.length} possible moves: ${possibleMoves.join(", ")}`);
         }
     }
 
@@ -124,7 +123,32 @@ function playRandomGame() {
     console.log(chess.pgn());
 }
 
-playRandomGame();
+// playRandomGame();
 
-// restart("r3k1r1/2p5/7p/pp3Pbb/N2pp2P/1P2P3/1R1P2K1/3R3n b q - 1 38");
-// turn("a1", "c1", "d1", "e1");
+export function guess(fen: string, modifiedSquares: Square[]) {
+    restart(fen);
+    let move;
+    let combinationsToTry: Array<Square[]> = [modifiedSquares.slice(0)];
+    while (modifiedSquares.length > 2) {
+        const firstSquareCombinations: Array<Square[]> = [];
+        const firstSquare = modifiedSquares.shift();
+        modifiedSquares.forEach(ms => firstSquareCombinations.push([firstSquare, ms] as Square[]));
+        combinationsToTry = combinationsToTry.concat(firstSquareCombinations);
+    }
+    let success = false;
+    while (!success && combinationsToTry.length > 0) {
+        try {
+            const squares = combinationsToTry.shift() as Square[];
+            move = turn(...squares);
+            success = true;
+        } catch (e) {
+            console.log("[debug]", e.message);
+        }
+    }
+    if (!move) {
+        throw new Error("No possible moves found!");
+    }
+    return move;
+}
+
+guess("r3k1r1/2p5/7p/pp3Pbb/N2pp2P/1P2P3/1R1P2K1/3R3n b q - 1 38", ["c7", "c6", "c5", "a7", "a6"])
