@@ -67,34 +67,30 @@ function getMovesTouchingSquares(squares: Square[]) {
 }
 
 function turn(...squares: Square[]) {
-    try {
-        let possibleMoves = getMovesTouchingSquares(squares);
+    let possibleMoves = getMovesTouchingSquares(squares);
 
-        if (possibleMoves.length === 0) {
-            throw new Error(`Found no possible moves touching squares ${squares.join(", ")}!`);
-        }
-
-        possibleMoves = possibleMoves.filter(m => !isNonQueenPromotion(m));
-
-        if (possibleMoves.length > 1) {
-            if (squares.length === 4 && possibleMoves.includes("O-O-O")) {
-                possibleMoves = ["O-O-O"];
-            } else if (squares.length === 4 && possibleMoves.includes("O-O")) {
-                possibleMoves = ["O-O-O"];
-            } else {
-                throw new Error(`Found ${possibleMoves.length} possible moves, ${possibleMoves.join(" , ")}`);
-            }
-        }
-
-        const move = possibleMoves[0];
-
-        console.log(`Found move: ${chalk.green(move)}`);
-        game.move(move);
-        return move;
-    } catch (e) {
-        console.log(chalk.red(e.message));
-        throw e;
+    if (possibleMoves.length === 0) {
+        throw new Error(`Found no possible moves touching squares ${squares.join(", ")}!`);
     }
+
+    possibleMoves = possibleMoves.filter(m => !isNonQueenPromotion(m))
+        .filter(m => m !== "O-O" && m !== "O-O-O");
+
+    if (possibleMoves.length > 1) {
+        if (squares.length === 4 && possibleMoves.includes("O-O-O")) {
+            possibleMoves = ["O-O-O"];
+        } else if (squares.length === 4 && possibleMoves.includes("O-O")) {
+            possibleMoves = ["O-O-O"];
+        } else {
+            throw new Error(`Found ${possibleMoves.length} possible moves, ${possibleMoves.join(" , ")}`);
+        }
+    }
+
+    const move = possibleMoves[0];
+
+    console.log(`Found move: ${chalk.green(move)}`);
+    game.move(move);
+    return move;
 }
 
 function isNonQueenPromotion(move) {
