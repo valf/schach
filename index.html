@@ -1,0 +1,87 @@
+<html>
+<head>
+    <script src="./pixelmatch.js"></script>
+</head>
+<body>
+
+    <canvas id="prev" width="200" height="200"></canvas>
+    <canvas id="curr" width="200" height="200"></canvas>
+    <canvas id="diff" width="200" height="200"></canvas>
+
+    <script>
+        var chessState = {
+            optimalImageDiffThreshold: 0.4,
+        };
+
+        var prevCanvas = document.querySelector("#prev");
+        var prevContext = prevCanvas.getContext("2d");
+        var currCanvas = document.querySelector("#curr");
+        var currContext = currCanvas.getContext("2d");
+        var diffCanvas = document.querySelector("#diff");
+        var diffContext = diffCanvas.getContext("2d");
+
+        function loadImage(src, callback) {
+            var image = new Image();
+            image.onload = function () {
+                callback(image);
+            };
+            image.src = src;
+        }
+
+        loadImage("./f3o.jpg", function (prevImage) {
+            loadImage("./f4o.jpg", function(currImage) {
+                onImagesLoaded(prevImage, currImage);
+            });
+        });
+
+        function onImagesLoaded(prevImage, currImage) {
+            var diffBuffer = diffContext.createImageData(200, 200);
+
+            prevContext.drawImage(prevImage, 0, 0, 200, 200);
+            currContext.drawImage(currImage, 0, 0, 200, 200);
+
+            pixelmatch(
+                prevContext.getImageData(0, 0, 200, 200).data,
+                currContext.getImageData(0, 0, 200, 200).data,
+                diffBuffer.data,
+                200,
+                200,
+                { threshold: chessState.optimalImageDiffThreshold }
+            );
+
+            diffContext.putImageData(diffBuffer, 0, 0);
+
+            var ranks = ["1", "2", "3", "4", "5", "6", "7", "8"];
+            var files = ["A", "B", "C", "D", "E", "F", "G", "H"];
+            var diffPerSquare = {};
+
+            for (var i = 0; i < diffBuffer.data.length; i += 4) {
+                var pixelIndex = i / 4;
+                var file = files[Math.floor(pixelIndex / (25 * 200))];
+                var rank = ranks[Math.floor((pixelIndex % 200) / 25)];
+                var square = file + rank;
+
+                if (
+                    diffBuffer.data[i + 0] === 255
+                    && diffBuffer.data[i + 1] === 0
+                    && diffBuffer.data[i + 2] === 0
+                    && diffBuffer.data[i + 3] === 255
+                ) {
+                    if (diffPerSquare[square] === undefined) {
+                        diffPerSquare[square] = 0;
+                    }
+
+                    diffPerSquare[square]++;
+                }
+            }
+
+            var squareDiffsFinal = Object.keys(diffPerSquare).reduce(function(memo))
+
+
+
+            console.log("diffPerSquare", diffPerSquare);
+        };
+
+    </script>
+</body>
+</html>
