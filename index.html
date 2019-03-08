@@ -11,6 +11,8 @@
     <script>
         var chessState = {
             optimalImageDiffThreshold: 0.4,
+            boardSize: 200,
+            squareSize: 200 / 8,
         };
 
         var prevCanvas = document.querySelector("#prev");
@@ -35,17 +37,17 @@
         });
 
         function onImagesLoaded(prevImage, currImage) {
-            var diffBuffer = diffContext.createImageData(200, 200);
+            var diffBuffer = diffContext.createImageData(chessState.boardSize, chessState.boardSize);
 
-            prevContext.drawImage(prevImage, 0, 0, 200, 200);
-            currContext.drawImage(currImage, 0, 0, 200, 200);
+            prevContext.drawImage(prevImage, 0, 0, chessState.boardSize, chessState.boardSize);
+            currContext.drawImage(currImage, 0, 0, chessState.boardSize, chessState.boardSize);
 
             pixelmatch(
-                prevContext.getImageData(0, 0, 200, 200).data,
-                currContext.getImageData(0, 0, 200, 200).data,
+                prevContext.getImageData(0, 0, chessState.boardSize, chessState.boardSize).data,
+                currContext.getImageData(0, 0, chessState.boardSize, chessState.boardSize).data,
                 diffBuffer.data,
-                200,
-                200,
+                chessState.boardSize,
+                chessState.boardSize,
                 { threshold: chessState.optimalImageDiffThreshold }
             );
 
@@ -57,8 +59,8 @@
 
             for (var i = 0; i < diffBuffer.data.length; i += 4) {
                 var pixelIndex = i / 4;
-                var file = files[Math.floor(pixelIndex / (25 * 200))];
-                var rank = ranks[Math.floor((pixelIndex % 200) / 25)];
+                var file = files[Math.floor(pixelIndex / (25 * chessState.boardSize))];
+                var rank = ranks[Math.floor((pixelIndex % chessState.boardSize) / 25)];
                 var square = file + rank;
 
                 if (
@@ -75,11 +77,20 @@
                 }
             }
 
-            var squareDiffsFinal = Object.keys(diffPerSquare).reduce(function(memo))
-
-
+            var diffPerSquareSorted = Object.keys(diffPerSquare)
+                .sort(function(a, b) {
+                    return diffPerSquare[b] - diffPerSquare[a];
+                })
+                .reduce(function(memo, curr) {
+                    memo.push({
+                        square: curr,
+                        weight: diffPerSquare[curr] / (chessState.squareSize * chessState.squareSize) * 100,
+                    });
+                    return memo;
+                }, []);
 
             console.log("diffPerSquare", diffPerSquare);
+            console.log("diffPerSquareSorted", diffPerSquareSorted);
         };
 
     </script>
