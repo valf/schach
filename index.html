@@ -91,6 +91,12 @@
 
             console.log("diffPerSquare", diffPerSquare);
             console.log("diffPerSquareSorted", diffPerSquareSorted);
+
+            function onImageReceived(event) {
+                console.log("event", event);
+            }
+
+            window.addEventListener("message", onImageReceived);
         };
 
     </script>
